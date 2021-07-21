@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="zh" xmlns:v-on="http://www.w3.org/1999/xhtml">
+<head>
+    <meta charset="UTF-8">
+    <title>login</title>
+</head>
+<body>
+<div id="login">
+    <h2>请登录</h2>
+    <div class="form">
+        <div class="item">
+            用户:
+            <label><input type="text" placeholder="username" v-model="name"></label>
+        </div>
+        <div class="item">
+            密码:
+            <label><input type="password" placeholder="password" v-model="password"></label>
+        </div>
+        <div class="raido">
+            <label>
+                <input type="radio" name="loginType" value="student" v-model="userType">学生
+                <input type="radio" name="loginType" value="admin" v-model="userType">管理员
+            </label>
+        </div>
+    </div>
+    <button v-on:click="login">登录</button>
+</div>
+</body>
+
+<style>
+    body {
+        background: cornflowerblue;
+    }
+
+    #login {
+        width: 30%;
+        height: auto;
+        margin: 0 auto;
+        margin-top: 13%;
+        text-align: center;
+        background: #00000060;
+        padding: 20px 50px;
+    }
+
+    #login h2 {
+        color: #fff;
+    }
+
+    #login .form .item {
+        color: #fff;
+        margin-top: 15px;
+    }
+
+    #login .form .item input {
+        width: 180px;
+        font-size: 18px;
+        border: 0;
+        border-bottom: 2px solid #fff;
+        padding: 5px 10px;
+        background: #ffffff00;
+        color: #fff;
+    }
+
+    #login .form .raido {
+        color: #fff;
+        margin-top: 15px;
+    }
+
+    #login .form .raido input {
+        font-size: 18px;
+        border: 0;
+        border-bottom: 2px solid #fff;
+        padding: 5px 10px;
+        background: #ffffff00;
+        color: #fff;
+    }
+
+    #login button {
+        margin-top: 20px;
+        width: 190px;
+        height: 30px;
+        font-size: 18px;
+        font-weight: 500;
+        color: #fff;
+        background-image: linear-gradient(to right, #74ebd5 0%, #9face6 100%);
+        border:0;
+        border-radius:15px;
+        margin-bottom: 10px;
+    }
+</style>
+
+<script src="https://cdn.jsdelivr.net/npm/vue@2/dist/vue.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+<script>
+let loginv = new Vue({
+    el: "#login",
+
+    data() {
+        return {
+            name: "",
+            password: "",
+            userType: "student"
+        }
+    },
+
+    mounted() {
+        if(localStorage.getItem("token") !== null){
+            if (localStorage.getItem("userType") === "admin") {
+                window.location.href = "/admin.html"
+            }
+            else if (localStorage.getItem("userType") === "student") {
+                window.location.href = "/student.html"
+            }
+        }
+    },
+
+    methods: {
+        login: function () {
+            let loginPath
+            if (this.userType === "admin"){
+                loginPath = '/api/login/admins'
+            }
+            else if (this.userType === "student") {
+                loginPath = '/api/login/students'
+            }
+
+            axios.post(loginPath, {
+                name: this.name,
+                password: this.password
+            }).then(response => {
+                localStorage["token"] = response.data.token
+                localStorage["userType"] = this.userType
+
+                if (this.userType === "admin"){
+                    window.location.href = '/admin.html'
+                }
+                else if (this.userType === "student") {
+                    window.location.href = '/student.html'
+                }
+            }).catch(err => {
+                this.name = ""
+                this.password = ""
+                window.alert("登录失败，请重试")
+            })
+        }
+    }
+})
+</script>
+</html>

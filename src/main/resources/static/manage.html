@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="zh" xmlns:v-on="http://www.w3.org/1999/xhtml">
+<head>
+    <meta charset="UTF-8">
+    <title>管理</title>
+    <script src="https://cdn.jsdelivr.net/npm/vue@2/dist/vue.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+</head>
+<body>
+<div id="manage">
+    <table>
+        <tr>
+            <td>题目:</td>
+            <td><input type="text" v-model="question"><br></td>
+        </tr>
+        <tr>
+            <td><input type="radio" name="ans" value="A" v-model="answer_id">A:</td>
+            <td><input type="text" v-model="A" Id="A"><br></td>
+        </tr>
+        <tr>
+            <td><input type="radio" name="ans" value="B" v-model="answer_id">B:</td>
+            <td><input type="text" v-model="B" Id="B"><br></td>
+        </tr>
+        <tr>
+            <td><input type="radio" name="ans" value="C" v-model="answer_id">C:</td>
+            <td><input type="text" v-model="C" Id="C"><br></td>
+        </tr>
+        <tr>
+            <td><input type="radio" name="ans" value="D" v-model="answer_id">D:</td>
+            <td><input type="text" v-model="D" Id="D"><br></td>
+        </tr>
+    </table>
+    <button v-on:click="add_question">添加</button>
+    <button v-on:click="my_back">返回</button>
+</div>
+</body>
+<style>
+    body {
+        background: cornflowerblue;
+    }
+
+    #manage {
+        width: 30%;
+        height: auto;
+        margin: 0 auto;
+        margin-top: 13%;
+        text-align: center;
+        background: #00000060;
+        padding: 20px 50px;
+        color: #fff;
+    }
+
+    #manage input {
+        font-size: 18px;
+        border: 0;
+        border-bottom: 2px solid #fff;
+        padding: 5px 10px;
+        background: #ffffff00;
+        color: #fff;
+    }
+
+    #manage button {
+        margin-top: 20px;
+        width: 150px;
+        height: 30px;
+        font-size: 18px;
+        font-weight: 500;
+        color: #fff;
+        background-image: linear-gradient(to right, #74ebd5 0%, #9face6 100%);
+        border: 0;
+        border-radius: 15px;
+        margin-bottom: 10px;
+    }
+</style>
+<script type="text/javascript">
+    new Vue({
+        el: '#manage',
+        data: {
+            question: '',
+            A: '',
+            B: '',
+            C: '',
+            D: '',
+            answer: '',
+            answer_id: ''
+        },
+        methods: {
+            add_question: function () {
+                this.answer = document.getElementById(this.answer_id).value
+                let token = localStorage.getItem("token")
+                console.log(this)
+                axios.post('/api/questions/',
+                    {
+                        question: this.question,
+                        A: this.A,
+                        B: this.B,
+                        C: this.C,
+                        D: this.D,
+                        answer: this.answer,
+                        answer_id: this.answer_id
+                    },
+                    {headers: {"Authorization": token}},
+                ).then(response => {
+                    window.alert("添加成功")
+
+                }).catch(err => {
+                    window.alert("添加失败")
+                })
+            },
+            my_back: function () {
+                window.location.href = "/admin.html"
+            }
+        },
+        mounted() {
+            let token = localStorage.getItem("token")
+            if (token === null) {
+                window.alert("未登录, 请登录")
+                window.location.href = "/"
+            }
+        }
+    })
+</script>
+</html>

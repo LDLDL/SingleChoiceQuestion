@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="zh" xmlns:v-on="http://www.w3.org/1999/xhtml">
+<head>
+    <meta charset="UTF-8">
+    <title>考试</title>
+</head>
+<body>
+<div id="exam">
+    <div v-for="item, index in questions">
+        <div class="container">
+            <h3>{{index+1}}. {{item.question}}</h3>
+
+            <label>
+                <input type="radio" :name=item.question value="A" v-model="answers[index]">
+            </label>
+            <span class="selection">A.{{item.a}}</span>
+
+            <label>
+                <input type="radio" :name=item.question value="B" v-model="answers[index]">
+            </label>
+            <span class="selection">B.{{item.b}}</span>
+
+            <label>
+                <input type="radio" :name=item.question value="C" v-model="answers[index]">
+            </label>
+            <span class="selection">C.{{item.c}}</span>
+
+            <label>
+                <input type="radio" :name=item.question value="D" v-model="answers[index]">
+            </label>
+            <span class="selection">D.{{item.d}}</span>
+        </div>
+    </div>
+    <button v-on:click="sub">提交</button>
+    <button v-on:click="my_back">返回</button>
+</div>
+</body>
+<style>
+    body {
+        background: cornflowerblue;
+    }
+
+    #exam {
+        width: 80%;
+        height: auto;
+        margin: 0 auto;
+        margin-top: 1%;
+        text-align: center;
+        background: #00000060;
+        padding: 20px 50px;
+    }
+
+    #exam h3 {
+        color: #fff;
+        margin-top: 5px;
+        margin-bottom: 5px;
+    }
+
+    #exam .selection {
+        color: #fff;
+        margin-top: 0;
+        margin-bottom: 10px;
+    }
+
+    #exam .container {
+        margin-top: 40px;
+        padding-bottom: 5px;
+        border: 1px solid #9face6;
+        border-radius: 3px;
+    }
+
+    #exam button {
+        margin-top: 20px;
+        width: 150px;
+        height: 30px;
+        font-size: 18px;
+        font-weight: 500;
+        color: #fff;
+        background-image: linear-gradient(to right, #74ebd5 0%, #9face6 100%);
+        border: 0;
+        border-radius: 15px;
+        margin-bottom: 10px;
+    }
+</style>
+
+<script src="https://cdn.jsdelivr.net/npm/vue@2/dist/vue.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+<script type="text/javascript">
+    let examv = new Vue({
+        el: '#exam',
+        data: {
+            exam_id: '',
+            questions: null,
+            answers: null,
+            right_answer: null,
+        },
+        methods: {
+            sub: function () {
+                let token = localStorage.getItem("token")
+                axios.post('/api/exams/check/' + this.exam_id,
+                    this.answers,
+                    {headers: {"Authorization": token}}
+                ).then(response => {
+                    console.log(response.data)
+                    this.right_answer = response.data.rightAnswer
+                    let ans = response.data.userAnswer
+                    let i = ""
+                    for (let s in this.right_answer) {
+                        i += "第" + (parseInt(s) + 1) + "题:你的答案是" + ans[s] + ",正确答案是" + this.right_answer[s] + "\n"
+                    }
+                    i += "你对了" + response.data.rightCount + "题"
+                    let f = window.confirm(i)
+                    if (f) {
+                        if (localStorage.getItem("userType") === "admin") {
+                            window.location.href = "/admin.html"
+                        }
+                        else if (localStorage.getItem("userType") === "student") {
+                            window.location.href = "/student.html"
+                        }
+                    }
+                }).catch(err => {
+                    window.alert("提交失败")
+                })
+            },
+
+            my_back: function () {
+                if (localStorage.getItem("userType") === "admin") {
+                    window.location.href = "/admin.html"
+                }
+                else if (localStorage.getItem("userType") === "student") {
+                    window.location.href = "/student.html"
+                }
+            }
+        },
+
+        mounted() {
+            let token = localStorage.getItem("token")
+            if (token === null) {
+                window.alert("未登录, 请登录")
+                window.location.href = "/"
+                return
+            }
+
+            try {
+                let ns = window.prompt("请输入题目数量")
+                let n = parseInt(ns)
+                axios.get('/api/exams/generation/' + n, {
+                    headers: {"Authorization": token}
+                }).then(response => {
+                    this.exam_id = response.data.id
+                    this.questions = response.data.data
+                    this.answers = []
+
+                    let item;
+                    for (item of this.questions) {
+                        this.answers.push(" ")
+                    }
+                }).catch(err => {
+                    console.log(err)
+                    localStorage.removeItem("token")
+                    localStorage.removeItem("userType")
+                    window.alert("登录过期, 请重新登录")
+                    window.location.href = "/"
+                })
+            } catch (e) {
+                window.alert("错误数量")
+                window.location.href = "/exam.html"
+            }
+        }
+    })
+</script>
+</html>

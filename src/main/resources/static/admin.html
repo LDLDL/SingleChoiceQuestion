@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="zh" xmlns:v-on="http://www.w3.org/1999/xhtml">
+<head>
+    <meta charset="UTF-8">
+    <title>管理</title>
+</head>
+<body>
+<div id="admin">
+    <h2>欢迎 {{name}}</h2>
+    <div class="left-top" v-on:click="logout">
+        <button>退出</button>
+    </div>
+    <div>
+        <button v-on:click="manage">管理</button>
+        <button v-on:click="exam">开始考试</button>
+    </div>
+</div>
+</body>
+
+<style>
+    body {
+        background: cornflowerblue;
+    }
+
+    #admin {
+        width: 30%;
+        height: auto;
+        margin: 0 auto;
+        margin-top: 13%;
+        text-align: center;
+        background: #00000060;
+        padding: 20px 50px;
+    }
+
+    #admin h2 {
+        color: #fff;
+    }
+
+    #admin button {
+        width: 140px;
+        height: 30px;
+        font-size: 18px;
+        font-weight: 500;
+        color: #fff;
+        background-image: linear-gradient(to right, #74ebd5 0%, #9face6 100%);
+        border: 0;
+        border-radius: 15px;
+        margin: 20px 10px 10px 10px;
+    }
+
+    #admin .left-top {
+        position: absolute;
+        top: 0px;
+        right: 70px;
+        width: 130px;
+    }
+</style>
+
+<script src="https://cdn.jsdelivr.net/npm/vue@2/dist/vue.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+
+<script>
+    let adminv = new Vue({
+        el: "#admin",
+
+        data: {
+            name: ""
+        },
+
+        mounted() {
+            let token = localStorage.getItem("token")
+            if (token === null) {
+                window.alert("未登录, 请登录")
+                window.location.href = "/"
+                return
+            }
+            if (localStorage.getItem("usertype") === "student") {
+                window.location.href = "/student.html"
+            } else {
+                axios.post('/api/login/token', {
+                    token: token
+                }).then(response => {
+                    this.name = response.data.name
+                }).catch(err => {
+                    localStorage.removeItem("token")
+                    localStorage.removeItem("userType")
+                    window.alert("登录过期, 请重新登录")
+                })
+            }
+        },
+
+        methods: {
+            manage: function () {
+                window.location.href = "/manage.html"
+            },
+
+            exam: function () {
+                window.location.href = "/exam.html"
+            },
+
+            logout: function () {
+                localStorage.removeItem("token")
+                localStorage.removeItem("userType")
+                window.location.href = "/"
+            }
+        }
+    })
+</script>
+</html>
